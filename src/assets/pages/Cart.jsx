@@ -1,72 +1,62 @@
 import { useState } from "react";
-import { pizzas as initialCart } from "../data/pizzas";
+import { pizzaCart as initialCart } from "../data/pizzas";
 
-const Cart = () => {
+function Cart() {
   const [cart, setCart] = useState(initialCart);
 
-  const removePizza = (id) => {
-      setCart(cart.filter(item => item.id !== id));
+  const increaseQuantity = (id) => {
+    setCart((prevCart) =>
+      prevCart.map((pizza) =>
+        pizza.id === id ? { ...pizza, count: pizza.count + 1 } : pizza
+      )
+    );
   };
 
-  const addPizza = (id) => {
-      setCart(cart.map(item =>
-          item.id === id ? { ...item, count: item.count + 1 } : item
-      ));
+  const decreaseQuantity = (id) => {
+    setCart((currentCart) =>
+      currentCart.map((pizza) =>
+        pizza.id === id && pizza.count > 0 ? { ...pizza, count: pizza.count - 1 } : pizza
+      )
+    );
   };
 
-  const reducePizza = (id) => {
-      setCart(prevCart => {
-          const updatedCart = prevCart.map(item =>
-              item.id === id
-                  ? { ...item, count: Math.max(item.count - 1, 0) }
-                  : item
-          );
-          return updatedCart.filter(item => item.count > 0);
-      });
-  };
+  const getPizzaById = (id) => cart.find((pizza) => pizza.id === id);
 
-  const totalQuantity = () => {
-      return cart.reduce((total, item) => total + item.count, 0);
-  };
-
-  const totalPrice = () => {
-      return cart.reduce((total, item) => total + item.price * item.count, 0);
+  const calculateTotal = () => {
+    return cart.reduce((total, pizza) => total + pizza.price * pizza.count, 0);
   };
 
   return (
-      <div>
-          <h2>Carrito de Compras</h2>
-          {cart.length === 0 ? (
-              <p>El carrito está vacío</p>
-          ) : (
+    <div className="container mt-14 mb-5 text-center p-5 ">
+      <h1 className="text-2xl font-semibold text-center mb-8">Carrito de Compras</h1>
+      <div className="flex flex-col space-y-4">
+        {initialCart.map((pizza) => (
+          <div key={pizza.id} className="flex flex-row justify-evenly items-center border-b-2 border-gray-200 p-4">
+            <div className="flex flex-row items-center space-x-4">
+              <img src={pizza.img} alt={pizza.name} className="w-20 h-20 object-cover rounded-lg" />
               <div>
-                  <ul>
-                      {cart.map(item => (
-                          <li key={item.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                              <img src={item.img} alt={item.name} style={{ width: '100px', marginRight: '15px' }} />
-                              <div>
-                                  <div>
-                                  <p>Pizza {item.name}</p>
-                                  <p>Precio: ${item.price}</p>
-                                  <p>Cantidad: {item.count}</p>
-                                  </div>
-                                  <button onClick={() => addPizza(item.id)}>+</button>
-                                  <button className='m-1' onClick={() => reducePizza(item.id)}>-</button>
-                                  <button onClick={() => removePizza(item.id)}>Eliminar</button>
-                                  <hr />
-                              </div>
-                          </li>
-                      ))}
-                  </ul>
-                  <div className='m-1'>
-                      <h3 >Total Productos: {totalQuantity()}</h3>
-                      <h3 >Total Precio: ${totalPrice()}</h3>
-                      <button className='m-1'>Pagar</button>
-                  </div>
+                <h2 className="text-lg font-semibold">{pizza.name}</h2>
+                <p className="text-sm text-gray-500">Precio: ${pizza.price}</p>
               </div>
-          )}
-      </div>
-  );
-};
+            </div>
+            <div className="flex flex-row items-center space-x-4">
+              <button className="bg-blue-700 text-white px-2 py-2 w-10 rounded-lg" onClick={() => decreaseQuantity(pizza.id)}>
+                -
+              </button>
+              <p className="text-sm text-gray-500">{getPizzaById(pizza.id)?.count || 0}</p>
+              <button className="bg-red-700 text-white px-2 py-2 w-10 rounded-lg" onClick={() => increaseQuantity(pizza.id)}>
+                +
+              </button>
+            </div>
+          </div>
+        ))}
+        <div>
+          <h2 className="text-lg font-semibold">Total: ${calculateTotal()}</h2>
+          <button className="bg-orange-700 text-white font-semibold px-2 py-2 rounded-lg">Pagar</button>
+				</div>
+		</div>
+	</div>
+	);
+}
 
 export default Cart;
